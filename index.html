@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AL3MLEAT — مجمع روابط (مبسّط)</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700,800&display=swap" rel="stylesheet">
 
   <style>
     :root{
@@ -17,7 +17,8 @@
       --shadow-sm: 0 10px 30px rgba(2,6,23,0.45);
     }
 
-    /* الخلفية تستخدم الملف 1.png الموجود في نفس المجلد */
+    /* الخلفية تستخدم الملف 1.png الموجود في نفس المجلد
+       background-attachment: scroll للتأكد أن الصورة تتحرك مع التمرير */
     html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;-webkit-font-smoothing:antialiased}
     body{
       display:flex;align-items:center;justify-content:center;padding:36px;
@@ -25,6 +26,7 @@
       background-size: cover, auto, auto;
       background-position: center;
       background-repeat: no-repeat;
+      background-attachment: scroll, scroll, scroll; /* <--- مهم: لا تخلي الخلفية ثابتة */
       color: #e6eef8;
     }
 
@@ -50,7 +52,7 @@
     .tag{color:var(--muted);font-size:0.95rem;margin-top:4px}
 
     .grid{
-      display:grid;grid-template-columns:repeat(3, 1fr);gap:14px;max-height:63vh;padding:8px;overflow:auto;
+      display:grid;grid-template-columns:repeat(3, 1fr);gap:14px;max-height:63vh;padding:8px;overflow:auto; /* الليستة قابلة للتمرير */
     }
     @media (max-width:980px){ .grid{ grid-template-columns:repeat(2,1fr) } }
     @media (max-width:640px){ .grid{ grid-template-columns:1fr } header.top{flex-direction:column;align-items:stretch} }
@@ -63,12 +65,14 @@
     }
     .card:hover{ transform:translateY(-6px); box-shadow: 0 28px 60px rgba(2,6,23,0.45) }
 
+    /* مهم: منع أي scroll داخل خلية الصورة */
     .thumb{
       width:68px;height:68px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
       background: linear-gradient(180deg, rgba(125,211,252,0.05), rgba(3,105,161,0.03));
-      border:1px solid rgba(255,255,255,0.03); font-weight:700;color:var(--accent);font-size:18px;overflow:hidden;
+      border:1px solid rgba(255,255,255,0.03); font-weight:700;color:var(--accent);font-size:18px;overflow:hidden; /* <-- hide overflow */
     }
-    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    /* الصورة تملأ الصندوق وتقص أجزاءها الزائدة بدل إظهار شريط تمرير */
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
 
     .meta{flex:1;min-width:0}
     .meta .title{font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -147,7 +151,7 @@
       try { const u = new URL(url); return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=128`; } catch(e){ return ''; }
     }
 
-    // عرض جميع الروابط (لا فلترة، لأن ميزة البحث أُزيلت)
+    // عرض جميع الروابط (بدون فلترة أو بحث)
     function render(){
       grid.innerHTML = '';
       if (!links.length){ empty.style.display = 'block'; }

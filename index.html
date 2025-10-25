@@ -18,15 +18,19 @@
     }
 
     /* الخلفية تستخدم الملف 1.png الموجود في نفس المجلد
-       background-attachment: scroll للتأكد أن الصورة تتحرك مع التمرير */
+       background-attachment: fixed يجعل الخلفية ثابتة بينما يتم تمرير المحتوى فوقها */
     html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;-webkit-font-smoothing:antialiased}
     body{
       display:flex;align-items:center;justify-content:center;padding:36px;
-      background-image: url('1.png'), radial-gradient(1200px 600px at 10% 10%, rgba(7,93,151,0.12), transparent 10%), linear-gradient(180deg,#071129,#021122);
+      background-image:
+        url('1.png'),
+        radial-gradient(1200px 600px at 10% 10%, rgba(7,93,151,0.12), transparent 10%),
+        linear-gradient(180deg,#071129,#021122);
       background-size: cover, auto, auto;
       background-position: center;
       background-repeat: no-repeat;
-      background-attachment: scroll, scroll, scroll; /* <--- مهم: لا تخلي الخلفية ثابتة */
+      /* هنا جعلت الخلفية ثابتة بالنسبة للشاشة */
+      background-attachment: fixed, fixed, fixed;
       color: #e6eef8;
     }
 
@@ -65,7 +69,7 @@
     }
     .card:hover{ transform:translateY(-6px); box-shadow: 0 28px 60px rgba(2,6,23,0.45) }
 
-    /* مهم: منع أي scroll داخل خلية الصورة */
+    /* منع أي scroll داخل خلية الصورة */
     .thumb{
       width:68px;height:68px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
       background: linear-gradient(180deg, rgba(125,211,252,0.05), rgba(3,105,161,0.03));
@@ -116,7 +120,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // مبسّط: ميزة البحث أُزيلت كما طُلب
+    // مبسّط: ميزة البحث والمحارف الأخرى أُزيلت كما طُلب، والخلفية الآن ثابتة (fixed)
     const STORAGE_KEY = 'al3mleat-links-v3';
 
     // البذرة الأولية للروابط

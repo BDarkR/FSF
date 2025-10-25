@@ -17,11 +17,10 @@
       --shadow-sm: 0 10px 30px rgba(2,6,23,0.45);
     }
 
-    /* الصفحة تستخدم صورة الخلفية 1.png الموجودة في نفس المجلد */
+    /* الخلفية تستخدم الملف 1.png الموجود في نفس المجلد */
     html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;-webkit-font-smoothing:antialiased}
     body{
       display:flex;align-items:center;justify-content:center;padding:36px;
-      /* الخلفية الأولى هي الصورة المطلوبة 1.png */
       background-image: url('1.png'), radial-gradient(1200px 600px at 10% 10%, rgba(7,93,151,0.12), transparent 10%), linear-gradient(180deg,#071129,#021122);
       background-size: cover, auto, auto;
       background-position: center;
@@ -50,21 +49,11 @@
     h1{margin:0;font-size:1.2rem}
     .tag{color:var(--muted);font-size:0.95rem;margin-top:4px}
 
-    .controls{
-      display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;
-    }
-    .search{
-      padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
-      min-width:220px;width:420px;background:transparent;color:inherit;font-size:0.98rem;
-      box-shadow: 0 8px 22px rgba(3,6,23,0.3) inset;
-    }
-    .search::placeholder{color:rgba(255,255,255,0.45)}
-
     .grid{
       display:grid;grid-template-columns:repeat(3, 1fr);gap:14px;max-height:63vh;padding:8px;overflow:auto;
     }
-    @media (max-width:980px){ .grid{ grid-template-columns:repeat(2,1fr) } .search{ width:260px } }
-    @media (max-width:640px){ .grid{ grid-template-columns:1fr } header.top{flex-direction:column;align-items:stretch} .search{ width:100% } }
+    @media (max-width:980px){ .grid{ grid-template-columns:repeat(2,1fr) } }
+    @media (max-width:640px){ .grid{ grid-template-columns:1fr } header.top{flex-direction:column;align-items:stretch} }
 
     .card{
       display:flex;gap:14px;align-items:flex-start;padding:14px;border-radius:14px;
@@ -110,13 +99,9 @@
       </div>
 
       <div class="actions" aria-hidden="true">
-        <!-- تم إزالة أزرار الإضافة، التعديل، التصدير، فتح الكل، وتبديل الثيم كما طُلب -->
+        <!-- جميع أزرار الإضافة/تعديل/تصدير/فتح الكل/ثيم أُزيلت -->
       </div>
     </header>
-
-    <div class="controls" role="region" aria-label="أدوات">
-      <input id="search" class="search" placeholder="ابحث عن عنوان أو رابط (اضغط / للتركيز)" aria-label="بحث">
-    </div>
 
     <section id="list-area">
       <div id="grid" class="grid" aria-live="polite"></div>
@@ -127,10 +112,10 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // تبسيط: حذف وظائف الإضافة/التعديل/التصدير/الفتح-الكل/الثيم
+    // مبسّط: ميزة البحث أُزيلت كما طُلب
     const STORAGE_KEY = 'al3mleat-links-v3';
 
-    // البداية
+    // البذرة الأولية للروابط
     const initial = [
       { id: 'al3mleat-1', url: 'https://bdarkr.github.io/AL3MLEAT/', title: 'AL3MLEAT' },
       { id: 'al3mleat-2', url: 'https://bdarkr.github.io/AL3MLEAT1/', title: 'AL3MLEAT1' },
@@ -141,7 +126,6 @@
     let links = [];
     const grid = document.getElementById('grid');
     const empty = document.getElementById('empty');
-    const searchEl = document.getElementById('search');
     const toastEl = document.getElementById('toast');
 
     const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
@@ -163,18 +147,13 @@
       try { const u = new URL(url); return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=128`; } catch(e){ return ''; }
     }
 
-    function render(q=''){
+    // عرض جميع الروابط (لا فلترة، لأن ميزة البحث أُزيلت)
+    function render(){
       grid.innerHTML = '';
-      const Q = (q || '').trim().toLowerCase();
-      const list = links.filter(l => {
-        if (!Q) return true;
-        return (l.title||'').toLowerCase().includes(Q) || (l.url||'').toLowerCase().includes(Q) || (l.tags||[]).join(' ').includes(Q);
-      });
-
-      if (!list.length){ empty.style.display = 'block'; }
+      if (!links.length){ empty.style.display = 'block'; }
       else {
         empty.style.display = 'none';
-        for (const item of list) grid.appendChild(makeCard(item));
+        for (const item of links) grid.appendChild(makeCard(item));
       }
     }
 
@@ -207,19 +186,8 @@
       urlLine.className = 'url';
       urlLine.textContent = link.url;
 
-      const tagsWrap = document.createElement('div');
-      tagsWrap.className = 'tags';
-      (link.tags||[]).forEach(t => {
-        const p = document.createElement('span');
-        p.className = 'tag-pill';
-        p.textContent = t;
-        p.addEventListener('click', () => { searchEl.value = t; render(t); });
-        tagsWrap.appendChild(p);
-      });
-
       meta.appendChild(title);
       meta.appendChild(urlLine);
-      if ((link.tags||[]).length) meta.appendChild(tagsWrap);
 
       const actions = document.createElement('div');
       actions.className = 'card-actions';
@@ -240,22 +208,14 @@
       return el;
     }
 
-    // keyboard shortcut to focus search
-    window.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== searchEl) { e.preventDefault(); searchEl.focus(); }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); searchEl.focus(); }
-    });
-
-    searchEl.addEventListener('input', (e) => render(e.target.value));
-
-    // load and render
+    // تحميل وعرض عند بداية التشغيل
     load();
     render();
 
-    // small startup toast
+    // إظهار توست صغير عند بدء التشغيل
     setTimeout(()=> showToast(`${links.length} رابط جاهز` , 1000), 500);
 
-    // Expose API if you want to programmatically set links from outside
+    // واجهة برمجة بسيطة للتعامل برمجياً من الخارج
     window.__AL3MLEAT = {
       getLinks: () => JSON.parse(JSON.stringify(links)),
       setLinks: (arr) => { if (Array.isArray(arr)){ links = JSON.parse(JSON.stringify(arr)); save(); render(); } }

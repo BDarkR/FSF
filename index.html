@@ -74,7 +74,19 @@
       background: linear-gradient(135deg, rgba(125,211,252,0.08), rgba(2,132,199,0.06));
       border:1px solid rgba(255,255,255,0.03); font-weight:800;font-size:18px;color:var(--accent);
       box-shadow:var(--shadow-sm);
+      overflow:hidden; /* مهم: يمنع تجاوز الصورة لحواف المربع */
     }
+    /* قصر الصورة داخل المربع بشكل آمن ومناسب */
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover; /* أو object-fit:contain إذا حبيتي تظهر كامل الشعار مع خلفية */
+      display:block;
+      pointer-events:none;
+      user-select:none;
+      border-radius:inherit;
+    }
+
     h1{margin:0;font-size:1.2rem}
     .tag{color:var(--muted);font-size:0.95rem;margin-top:4px}
 
@@ -164,7 +176,7 @@
     <header class="top">
       <div class="brand">
         <div class="logo">
-  <img src="./logo.png">
+  <img src="./logo.png" alt="شعار">
 </div>
         <div>
           <h1 id="main-title"> تقارير العمليات</h1>
@@ -190,7 +202,7 @@
 
     const initial = [
       { id: 'al3mleat-1', url: 'https://bdarkr.github.io/AL3MLEAT/', title: 'تقرير العـمـليات الشفت المسائي' },
-      { id: 'al3mleat-2', url: 'https://bdarkr.github.io/AL3MLEAT1/', title: 'تقرير العـمليات الميناء' },
+      { id: 'al3mleat-2', url: 'https://bdarkr.github.io/AL3MLEAT1/', title: 'تقرير العـمالات الميناء' },
       { id: 'al3mleat-3', url: 'https://bdarkr.github.io/AL3MLEAT2/', title: 'تقرير العمليات التوسعات' },
       { id: 'al3mleat-4', url: 'https://bdarkr.github.io/AL3MLEAT4/', title: 'تقرير العملـيات الطوارئ' }
     ];

@@ -9,7 +9,6 @@
 
   <style>
     :root{
-      /* غيّرت الألوان للأخضر ليتطابق مع شعارك */
       --accent:#22c55e;       /* أخضر فاتح (للنص/أيقونات) */
       --accent-2:#166534;     /* أخضر غامق (للتدرجات) */
       --muted:#9aa7b4;
@@ -18,11 +17,10 @@
       --shadow-sm: 0 10px 30px rgba(2,6,23,0.45);
     }
 
-    /* اجعل الصفحة نفسها غير قابلة للتمرير وخلّي التمرير داخل .grid فقط */
     html,body{
       height:100%;
       margin:0;
-      overflow:hidden; /* يمنع التمرير الكلي للصفحة */
+      overflow:hidden;
       font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
       -webkit-font-smoothing:antialiased;
     }
@@ -43,7 +41,6 @@
       color: #e6eef8;
     }
 
-    /* الحاوية الرئيسية تتصرف كعمود وتحدّد أقصى ارتفاع بالنسبة للنافذة */
     .shell{
       width:100%;
       max-width:1100px;
@@ -51,12 +48,11 @@
       padding:20px;
       background: linear-gradient(180deg, rgba(2,6,23,0.65), rgba(2,6,23,0.6));
       box-shadow:var(--shadow-lg);
-      overflow:hidden; /* لا نريد تمرير على مستوى الـ shell */
+      overflow:hidden;
       border:1px solid rgba(255,255,255,0.03);
 
       display:flex;
       flex-direction:column;
-      /* 72px هنا تقريبا يعادل حشوة body الرأسية (36px * 2)، عدّل القيمة لو لزم */
       max-height: calc(100vh - 72px);
     }
 
@@ -66,16 +62,16 @@
       align-items:center;
       justify-content:space-between;
       margin-bottom:14px;
-      flex: 0 0 auto; /* لا يسمح للهايدر بالتمدد */
+      flex: 0 0 auto;
     }
 
-    /* الآن الشعار والعنوان مُوسّطان معاً */
+    /* شعار/عنوان في الوسط */
     .brand{
       display:flex;
-      flex-direction:column; /* الشعار فوق العنوان */
+      flex-direction:column;
       gap:8px;
-      align-items:center;     /* محاذاة بالمنتصف أفقياً */
-      text-align:center;      /* نص في الوسط */
+      align-items:center;
+      text-align:center;
       flex:1;
     }
 
@@ -85,13 +81,12 @@
       border:1px solid rgba(255,255,255,0.03);
       font-weight:800;font-size:18px;color:var(--accent);
       box-shadow:var(--shadow-sm);
-      overflow:hidden; /* يمنع تجاوز الصورة لحواف المربع */
+      overflow:hidden;
     }
-    /* قصر الصورة داخل المربع بشكل آمن ومناسب */
     .logo img{
       width:100%;
       height:100%;
-      object-fit:contain; /* يظهر الشعار كاملاً داخل المربع بدلاً من القص */
+      object-fit:contain;
       display:block;
       pointer-events:none;
       user-select:none;
@@ -101,7 +96,6 @@
     h1{margin:0;font-size:1.2rem}
     .tag{color:var(--muted);font-size:0.95rem;margin-top:4px}
 
-    /* الشبكة تأخذ المساحة المتبقية داخل .shell وتبقى قابلة للتمرير داخلياً */
     .grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
@@ -110,9 +104,9 @@
       padding:8px;
       align-content:start;
 
-      flex:1 1 auto;      /* تأخذ المساحة المتبقية */
-      overflow:auto;      /* التمرير محصور هنا */
-      max-height:none;    /* نستخدم flex لاحتساب الارتفاع بدل max-height */
+      flex:1 1 auto;
+      overflow:auto;
+      max-height:none;
     }
     @media (max-width:980px){ .grid{ grid-template-columns:repeat(auto-fit,minmax(240px,300px)) } }
     @media (max-width:640px){ .grid{ grid-template-columns:1fr } header.top{flex-direction:column;align-items:stretch} }
@@ -122,28 +116,38 @@
       background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
       border:1px solid rgba(255,255,255,0.03); transition:transform .16s ease, box-shadow .16s;
       cursor:default;
-      width:320px; /* عرض ثابت لكل بطاقة ليبقى التنسيق ثابت ومتمركز */
+      width:320px;
       box-sizing:border-box;
     }
     .card:hover{ transform:translateY(-6px); box-shadow: 0 28px 60px rgba(2,6,23,0.45) }
 
-    /* غيّرت لون خلفية الـ thumb للأخضر بحيث يطابق الشعار */
+    /* تعديل العرض الخلفي للـ thumb ليلائم الخلفية مع طمس خفيف */
     .thumb{
       width:68px;height:68px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-      background: linear-gradient(180deg, rgba(34,197,94,0.06), rgba(16,99,47,0.03));
-      border:1px solid rgba(255,255,255,0.03); font-weight:700;color:var(--accent);font-size:18px;overflow:hidden;
+      background: rgba(4,8,12,0.48);            /* شفاف غامق يتناسب مع الخلفية */
+      border:1px solid rgba(255,255,255,0.03);
+      backdrop-filter: blur(6px);               /* طمس خلفي لطيف */
+      -webkit-backdrop-filter: blur(6px);
+      font-weight:700;color:var(--accent);font-size:18px;overflow:hidden;
+      box-shadow: 0 6px 18px rgba(2,6,23,0.45) inset;
     }
-    .thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
+    /* صورة المصغّر تكون أصغر داخل الدائرة لترك مسافة حولها وتتماشى مع الخلفية */
+    .thumb img{
+      width:56%;
+      height:56%;
+      object-fit:contain;
+      display:block;
+      pointer-events:none;
+      user-select:none;
+    }
 
     .meta{flex:1;min-width:0}
     .meta .title{font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .meta .title .title-text{color:inherit;text-decoration:none; display:inline-block; max-width:100%}
     .meta .url{display:none}
     .meta .tags{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-    /* تلوين الـ tag-pill بالأخضر */
     .tag-pill{background:rgba(34,197,94,0.07);color:var(--accent);padding:6px 8px;border-radius:999px;font-size:0.82rem;border:1px solid rgba(34,197,94,0.04)}
 
-    /* أظهر أزرار الإجراءات واجعلها مصممة بشكل بسيط (تدرّج أخضر) */
     .card .card-actions{ display:flex;gap:8px;align-items:center;flex-direction:column;flex-shrink:0 }
     .open-btn{
       background: linear-gradient(90deg,var(--accent), var(--accent-2));
@@ -168,7 +172,7 @@
       bottom:28px;
       padding:10px 14px;
       border-radius:999px;
-      background:rgba(3,105,161,0.95);
+      background:rgba(16,99,47,0.95);
       color:white;
       font-weight:700;
       box-shadow:0 12px 30px rgba(2,6,23,0.4);
@@ -179,7 +183,6 @@
     }
     .toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); pointer-events:auto }
 
-    /* إمكانية الوصول: اجعل البطاقات قابلة للتركيز */
     .card[tabindex="0"]{ outline: none; }
     .card:focus{ box-shadow: 0 30px 80px rgba(2,6,23,0.5); transform: translateY(-6px); }
   </style>
@@ -197,9 +200,7 @@
         </div>
       </div>
 
-      <div class="actions" aria-hidden="true">
-        <!-- جميع أزرار الإضافة/تعديل/تصدير/فتح الكل/ثيم أُزيلت -->
-      </div>
+      <div class="actions" aria-hidden="true"></div>
     </header>
 
     <section id="list-area">
@@ -268,11 +269,23 @@
 
       const thumb = document.createElement('div');
       thumb.className = 'thumb';
+
+      // نحاول تحميل صورة مصغّرة مخصصة ./logo-thumb.png أولاً،
+      // إذا لم توجد نرجع للفافيكون، وإن فشل نعرض الأحرف الأولى.
       const img = document.createElement('img');
-      img.src = faviconFor(link.url);
       img.alt = '';
+      img.src = './logo-thumb.png'; // ضع هنا الصورة المصغّرة التي تريدها في المشروع
       img.onload = () => { thumb.innerHTML = ''; thumb.appendChild(img); };
-      img.onerror = () => { thumb.textContent = (link.title || link.url).slice(0,2).toUpperCase(); };
+      img.onerror = () => {
+        const fav = faviconFor(link.url);
+        if (fav){
+          img.onerror = () => { thumb.textContent = (link.title || link.url).slice(0,2).toUpperCase(); };
+          img.src = fav;
+        } else {
+          thumb.textContent = (link.title || link.url).slice(0,2).toUpperCase();
+        }
+      };
+      // نعرض المؤقت (الحروف) لحين التحميل
       thumb.textContent = (link.title || link.url).slice(0,2).toUpperCase();
 
       const meta = document.createElement('div');
@@ -295,7 +308,6 @@
       const actions = document.createElement('div');
       actions.className = 'card-actions';
 
-      // زر الفتح
       const openBtn = document.createElement('button');
       openBtn.className = 'open-btn';
       openBtn.type = 'button';
@@ -308,15 +320,12 @@
 
       actions.appendChild(openBtn);
 
-      // النقر على البطاقة يفتح الرابط أيضاً (ما لم يتم النقر على زر آخر)
       el.addEventListener('click', (ev) => {
-        // إذا تم النقر على زر أو عنصر تفاعلي داخل البطاقة، تجاهل (زر already handled)
         const target = ev.target;
         if (target.tagName.toLowerCase() === 'button' || target.closest('button')) return;
         openLink(link.url);
       });
 
-      // دعم لوحة المفاتيح: Enter أو Space يفتح الرابط
       el.addEventListener('keydown', (ev) => {
         if (ev.key === 'Enter' || ev.key === ' ') {
           ev.preventDefault();
@@ -332,7 +341,6 @@
 
     function openLink(url){
       try {
-        // افتح الرابط في تبويب جديد مع حماية noopener
         window.open(url, '_blank', 'noopener,noreferrer');
         showToast('تم فتح الرابط');
       } catch(e){

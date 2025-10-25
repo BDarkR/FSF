@@ -17,11 +17,20 @@
       --shadow-sm: 0 10px 30px rgba(2,6,23,0.45);
     }
 
-    /* الخلفية تستخدم الملف 1.png الموجود في نفس المجلد
-       background-attachment: fixed يجعل الخلفية ثابتة بينما يتم تمرير المحتوى فوقها */
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;-webkit-font-smoothing:antialiased}
+    /* اجعل الصفحة نفسها غير قابلة للتمرير وخلّي التمرير داخل .grid فقط */
+    html,body{
+      height:100%;
+      margin:0;
+      overflow:hidden; /* يمنع التمرير الكلي للصفحة */
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+      -webkit-font-smoothing:antialiased;
+    }
+
     body{
-      display:flex;align-items:center;justify-content:center;padding:36px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:36px;
       background-image:
         url('1.png'),
         radial-gradient(1200px 600px at 10% 10%, rgba(7,93,151,0.12), transparent 10%),
@@ -29,20 +38,34 @@
       background-size: cover, auto, auto;
       background-position: center;
       background-repeat: no-repeat;
-      /* هنا جعلت الخلفية ثابتة بالنسبة للشاشة */
       background-attachment: fixed, fixed, fixed;
       color: #e6eef8;
     }
 
+    /* الحاوية الرئيسية تتصرف كعمود وتحدّد أقصى ارتفاع بالنسبة للنافذة */
     .shell{
-      width:100%;max-width:1100px;border-radius:18px;padding:20px;
+      width:100%;
+      max-width:1100px;
+      border-radius:18px;
+      padding:20px;
       background: linear-gradient(180deg, rgba(2,6,23,0.65), rgba(2,6,23,0.6));
-      box-shadow:var(--shadow-lg); overflow:hidden;
+      box-shadow:var(--shadow-lg);
+      overflow:hidden; /* لا نريد تمرير على مستوى الـ shell */
       border:1px solid rgba(255,255,255,0.03);
+
+      display:flex;
+      flex-direction:column;
+      /* 72px هنا تقريبا يعادل حشوة body الرأسية (36px * 2)، عدّل القيمة لو لزم */
+      max-height: calc(100vh - 72px);
     }
 
     header.top{
-      display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
+      flex: 0 0 auto; /* لا يسمح للهايدر بالتمدد */
     }
 
     .brand{display:flex;gap:12px;align-items:center}
@@ -55,16 +78,18 @@
     h1{margin:0;font-size:1.2rem}
     .tag{color:var(--muted);font-size:0.95rem;margin-top:4px}
 
-    /* تم تعديل الشبكة لتكون العناصر ثابتة العرض ومتمركزة في الوسط */
+    /* الشبكة تأخذ المساحة المتبقية داخل .shell وتبقى قابلة للتمرير داخلياً */
     .grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
-      justify-content:center; /* يوسّط الأعمدة داخل الحاوية */
+      justify-content:center;
       gap:14px;
-      max-height:63vh;
       padding:8px;
-      overflow:auto; /* الليستة قابلة للتمرير */
       align-content:start;
+
+      flex:1 1 auto;      /* تأخذ المساحة المتبقية */
+      overflow:auto;      /* التمرير محصور هنا */
+      max-height:none;    /* نستخدم flex لاحتساب الارتفاع بدل max-height */
     }
     @media (max-width:980px){ .grid{ grid-template-columns:repeat(auto-fit,minmax(240px,300px)) } }
     @media (max-width:640px){ .grid{ grid-template-columns:1fr } header.top{flex-direction:column;align-items:stretch} }
@@ -78,30 +103,24 @@
     }
     .card:hover{ transform:translateY(-6px); box-shadow: 0 28px 60px rgba(2,6,23,0.45) }
 
-    /* منع أي scroll داخل خلية الصورة */
     .thumb{
       width:68px;height:68px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
       background: linear-gradient(180deg, rgba(125,211,252,0.05), rgba(3,105,161,0.03));
-      border:1px solid rgba(255,255,255,0.03); font-weight:700;color:var(--accent);font-size:18px;overflow:hidden; /* <-- hide overflow */
+      border:1px solid rgba(255,255,255,0.03); font-weight:700;color:var(--accent);font-size:18px;overflow:hidden;
     }
-    /* الصورة تملأ الصندوق وتقص أجزاءها الزائدة بدل إظهار شريط تمرير */
     .thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
 
     .meta{flex:1;min-width:0}
     .meta .title{font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .meta .title .title-text{color:inherit;text-decoration:none; display:inline-block; max-width:100%}
-    /* اخفاء النص الخاص بالرابط (URL) */
     .meta .url{display:none}
     .meta .tags{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
     .tag-pill{background:rgba(125,211,252,0.07);color:var(--accent);padding:6px 8px;border-radius:999px;font-size:0.82rem;border:1px solid rgba(125,211,252,0.04)}
 
-    .card .card-actions{display:flex;flex-direction:column;gap:8px;align-items:center}
-    /* اخفاء أي أزرار فتح لتجنب الروابط الظاهرة أو القابلة للنقر */
     .card .card-actions{ display:none; }
 
     .empty{padding:18px;text-align:center;border-radius:12px;color:var(--muted);margin-top:8px;background: linear-gradient(90deg, rgba(125,211,252,0.03), transparent);}
 
-    /* toast */
     .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom:28px;padding:10px 14px;border-radius:999px;background:rgba(3,105,161,0.95);color:white;font-weight:700;box-shadow:0 12px 30px rgba(2,6,23,0.5); opacity:0; pointer-events:none; transition:all .22s ease }
     .toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); pointer-events:auto }
   </style>
@@ -131,10 +150,8 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // مبسّط: ميزة البحث والمحارف الأخرى أُزيلت كما طُلب، والخلفية الآن ثابتة (fixed)
     const STORAGE_KEY = 'al3mleat-links-v3';
 
-    // البذرة الأولية للروابط
     const initial = [
       { id: 'al3mleat-1', url: 'https://bdarkr.github.io/AL3MLEAT/', title: 'AL3MLEAT' },
       { id: 'al3mleat-2', url: 'https://bdarkr.github.io/AL3MLEAT1/', title: 'AL3MLEAT1' },
@@ -166,7 +183,6 @@
       try { const u = new URL(url); return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=128`; } catch(e){ return ''; }
     }
 
-    // عرض جميع الروابط (بدون فلترة أو بحث) - لكن الروابط مخفية ولا يمكن فتحها من الواجهة
     function render(){
       grid.innerHTML = '';
       if (!links.length){ empty.style.display = 'block'; }
@@ -195,7 +211,6 @@
       const title = document.createElement('div');
       title.className = 'title';
 
-      // بدلاً من عنصر <a> نجعل النص غير قابل للنقر ونخفي روابط العنوان الفعلية
       const span = document.createElement('span');
       span.className = 'title-text';
       span.textContent = link.title || link.url;
@@ -203,7 +218,7 @@
 
       const urlLine = document.createElement('div');
       urlLine.className = 'url';
-      urlLine.textContent = link.url; // لكن سيتم اخفاؤها عبر CSS
+      urlLine.textContent = link.url;
 
       meta.appendChild(title);
       meta.appendChild(urlLine);
@@ -211,22 +226,17 @@
       const actions = document.createElement('div');
       actions.className = 'card-actions';
 
-      // أزرار الفتح مخفية الآن عبر CSS — لا نضيف أي عناصر قابلة للنقر هنا
-
       el.appendChild(thumb);
       el.appendChild(meta);
       el.appendChild(actions);
       return el;
     }
 
-    // تحميل وعرض عند بداية التشغيل
     load();
     render();
 
-    // إظهار توست صغير عند بدء التشغيل
     setTimeout(()=> showToast(`${links.length} رابط جاهز` , 1000), 500);
 
-    // واجهة برمجة بسيطة للتعامل برمجياً من الخارج
     window.__AL3MLEAT = {
       getLinks: () => JSON.parse(JSON.stringify(links)),
       setLinks: (arr) => { if (Array.isArray(arr)){ links = JSON.parse(JSON.stringify(arr)); save(); render(); } }

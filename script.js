@@ -1,155 +1,194 @@
-/* بيانات الروابط */
-const LINKS = [
-  { id: 'al3mleat', title: 'AL3MLEAT', url: 'https://bdarkr.github.io/AL3MLEAT/' },
-  { id: 'al3mleat1', title: 'AL3MLEAT1', url: 'https://bdarkr.github.io/AL3MLEAT1/' },
-  { id: 'al3mleat2', title: 'AL3MLEAT2', url: 'https://bdarkr.github.io/AL3MLEAT2/' },
-  { id: 'al3mleat4', title: 'AL3MLEAT4', url: 'https://bdarkr.github.io/AL3MLEAT4/' },
-];
+// Simple To-Do app with localStorage persistence
+const STORAGE_KEY = 'todos-v1';
 
-/* عناصر DOM */
-const listEl = document.getElementById('list');
-const searchEl = document.getElementById('search');
-const openAllBtn = document.getElementById('openAll');
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
 
-const modal = document.getElementById('modal');
-const backdrop = document.getElementById('backdrop');
-const previewFrame = document.getElementById('previewFrame');
-const frameFallback = document.getElementById('frameFallback');
-const modalTitle = document.getElementById('modalTitle');
-const copyLinkBtn = document.getElementById('copyLink');
-const openNewBtn = document.getElementById('openNew');
-const closeModalBtn = document.getElementById('closeModal');
+const form = $('#todo-form');
+const input = $('#todo-input');
+const listEl = $('#todo-list');
+const countEl = $('#count');
+const filters = document.querySelectorAll('.filter');
+const searchEl = $('#search');
+const clearCompletedBtn = $('#clear-completed');
+const clearAllBtn = $('#clear-all');
 
-let currentItem = null;
+let todos = [];
+let currentFilter = 'all';
+let currentSearch = '';
 
-/* توليد البطاقات */
-function renderList(items) {
-  listEl.innerHTML = '';
-  items.forEach(it => {
-    const li = document.createElement('li');
-    li.className = 'link-card';
-    li.setAttribute('role', 'listitem');
-    li.innerHTML = `
-      <div class="card-top">
-        <div>
-          <div class="title">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="24" height="24" rx="4" fill="#021f25"></rect>
-              <path d="M8 12h8M8 8h8M8 16h6" stroke="#2dd4bf" stroke-width="1.4" stroke-linecap="round"></path>
-            </svg>
-            ${escapeHtml(it.title)}
-          </div>
-          <div class="url">${escapeHtml(it.url)}</div>
-        </div>
-        <div class="small">#${it.id}</div>
-      </div>
-      <div class="card-actions">
-        <button class="action-btn preview primary" data-id="${it.id}" type="button">معاينة</button>
-        <button class="action-btn open" data-url="${it.url}" type="button">فتح</button>
-        <button class="action-btn copy" data-url="${it.url}" type="button">نسخ</button>
-      </div>
-    `;
-    listEl.appendChild(li);
+function loadTodos() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    todos = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.error('Failed to load todos', e);
+    todos = [];
+  }
+}
+
+function saveTodos() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+}
+
+function makeTodo(text) {
+  return {
+    id: Date.now().toString(),
+    text: text.trim(),
+    completed: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function render() {
+  // filter & search
+  const filtered = todos.filter(t => {
+    if (currentFilter === 'active' && t.completed) return false;
+    if (currentFilter === 'completed' && !t.completed) return false;
+    if (currentSearch && !t.text.toLowerCase().includes(currentSearch.toLowerCase())) return false;
+    return true;
   });
-}
 
-/* مساعدات */
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
-
-/* أحداث عامة */
-listEl.addEventListener('click', (e) => {
-  const p = e.target.closest('.preview');
-  if (p) {
-    const id = p.dataset.id;
-    const item = LINKS.find(x => x.id === id);
-    openPreview(item);
-    return;
-  }
-  const o = e.target.closest('.open');
-  if (o) {
-    const url = o.dataset.url;
-    window.open(url, '_blank', 'noopener');
-    return;
-  }
-  const c = e.target.closest('.copy');
-  if (c) {
-    const url = c.dataset.url;
-    navigator.clipboard?.writeText(url).then(() => {
-      showToast('تم نسخ الرابط');
-    }).catch(() => showToast('حدث خطأ أثناء النسخ'));
-  }
-});
-
-openAllBtn.addEventListener('click', () => {
-  LINKS.forEach(l => window.open(l.url, '_blank', 'noopener'));
-});
-
-/* بحث */
-searchEl.addEventListener('input', (e) => {
-  const q = e.target.value.trim().toLowerCase();
-  const filtered = LINKS.filter(l => (l.title + ' ' + l.url + ' ' + l.id).toLowerCase().includes(q));
-  renderList(filtered);
-});
-
-/* معاينة (Modal) */
-function openPreview(item) {
-  if (!item) return;
-  currentItem = item;
-  modal.setAttribute('aria-hidden', 'false');
-  modal.style.display = 'flex';
-  modalTitle.textContent = `معاينة — ${item.title}`;
-  frameFallback.style.display = 'none';
-  previewFrame.style.display = 'block';
-  previewFrame.src = item.url;
-
-  // إذا منع الـ iframe الظهور، نظهر رسالة بعد تأخير قصير
-  let loaded = false;
-  const onload = () => { loaded = true; frameFallback.style.display = 'none'; previewFrame.style.display = 'block'; };
-  previewFrame.onload = onload;
-  setTimeout(() => {
-    if (!loaded) {
-      previewFrame.style.display = 'none';
-      frameFallback.style.display = 'block';
+  listEl.innerHTML = '';
+  if (filtered.length === 0) {
+    const empty = document.createElement('li');
+    empty.className = 'small';
+    empty.textContent = 'No tasks found.';
+    listEl.appendChild(empty);
+  } else {
+    for (const t of filtered) {
+      listEl.appendChild(renderTodoItem(t));
     }
-  }, 1200);
+  }
+
+  const remaining = todos.filter(t => !t.completed).length;
+  countEl.textContent = `${remaining} item${remaining !== 1 ? 's' : ''} left`;
+
+  // toggle active class on filters
+  filters.forEach(f => f.classList.toggle('active', f.dataset.filter === currentFilter));
 }
 
-function closePreview() {
-  previewFrame.src = 'about:blank';
-  modal.setAttribute('aria-hidden', 'true');
-  modal.style.display = 'none';
-  currentItem = null;
+function renderTodoItem(todo) {
+  const li = document.createElement('li');
+  li.className = 'todo-item';
+  li.dataset.id = todo.id;
+
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'icon';
+  toggleBtn.title = 'Toggle complete';
+  toggleBtn.innerHTML = todo.completed ? '✓' : '○';
+  toggleBtn.addEventListener('click', () => {
+    todo.completed = !todo.completed;
+    saveTodos();
+    render();
+  });
+
+  const textWrap = document.createElement('div');
+  textWrap.className = 'text' + (todo.completed ? ' completed' : '');
+  textWrap.textContent = todo.text;
+  textWrap.contentEditable = true;
+  textWrap.spellcheck = false;
+  textWrap.title = 'Double-click or edit to change text (press Enter to save)';
+
+  // Save edits on Enter and blur
+  textWrap.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      textWrap.blur();
+    }
+  });
+  textWrap.addEventListener('blur', () => {
+    const newText = textWrap.textContent.trim();
+    if (!newText) {
+      // if cleared, remove todo
+      todos = todos.filter(t => t.id !== todo.id);
+    } else {
+      todo.text = newText;
+    }
+    saveTodos();
+    render();
+  });
+
+  const editHint = document.createElement('button');
+  editHint.className = 'icon';
+  editHint.title = 'Edit';
+  editHint.innerHTML = '✎';
+  editHint.addEventListener('click', () => {
+    textWrap.focus();
+    // place caret at end
+    document.execCommand('selectAll', false, null);
+    document.getSelection().collapseToEnd();
+  });
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'icon';
+  delBtn.title = 'Delete';
+  delBtn.innerHTML = '🗑';
+  delBtn.addEventListener('click', () => {
+    if (confirm('Delete this task?')) {
+      todos = todos.filter(t => t.id !== todo.id);
+      saveTodos();
+      render();
+    }
+  });
+
+  li.appendChild(toggleBtn);
+  li.appendChild(textWrap);
+  li.appendChild(editHint);
+  li.appendChild(delBtn);
+
+  return li;
 }
 
-/* نسخ وفتح من المودال */
-copyLinkBtn.addEventListener('click', () => {
-  if (!currentItem) return;
-  navigator.clipboard?.writeText(currentItem.url).then(() => showToast('تم نسخ الرابط')).catch(()=>showToast('خطأ'));
+// Event handlers
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const val = input.value.trim();
+  if (!val) return;
+  todos.unshift(makeTodo(val));
+  input.value = '';
+  saveTodos();
+  render();
 });
-openNewBtn.addEventListener('click', () => {
-  if (!currentItem) return;
-  window.open(currentItem.url, '_blank', 'noopener');
+
+filters.forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentFilter = btn.dataset.filter;
+    render();
+  });
 });
-closeModalBtn.addEventListener('click', closePreview);
-backdrop.addEventListener('click', closePreview);
 
-/* بسيط: إشعار مؤقت */
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.textContent = msg;
-  t.style.position = 'fixed';
-  t.style.right = '18px';
-  t.style.bottom = '18px';
-  t.style.padding = '10px 14px';
-  t.style.background = 'linear-gradient(90deg,#06303a,#06484b)';
-  t.style.color = 'white';
-  t.style.borderRadius = '10px';
-  t.style.boxShadow = '0 10px 30px rgba(2,6,12,0.6)';
-  t.style.zIndex = 120;
-  document.body.appendChild(t);
-  setTimeout(()=> t.style.opacity = '0', 2200);
-  setTimeout(()=> t.remove(), 2800);
-}
+searchEl.addEventListener('input', (e) => {
+  currentSearch = e.target.value;
+  render();
+});
 
-/* render initial */
-renderList(LINKS);
+clearCompletedBtn.addEventListener('click', () => {
+  const done = todos.filter(t => t.completed).length;
+  if (!done) return alert('No completed tasks to clear.');
+  if (confirm(`Clear ${done} completed task${done>1?'s':''}?`)) {
+    todos = todos.filter(t => !t.completed);
+    saveTodos();
+    render();
+  }
+});
+
+clearAllBtn.addEventListener('click', () => {
+  if (!todos.length) return;
+  if (confirm('Clear ALL tasks? This cannot be undone.')) {
+    todos = [];
+    saveTodos();
+    render();
+  }
+});
+
+// keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    input.focus();
+  }
+});
+
+loadTodos();
+render();

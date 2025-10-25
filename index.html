@@ -274,7 +274,7 @@
       // إذا لم توجد نرجع للفافيكون، وإن فشل نعرض الأحرف الأولى.
       const img = document.createElement('img');
       img.alt = '';
-      img.src = './logo-thumb.png'; // ضع هنا الصورة المصغّرة التي تريدها في المشروع
+      img.src = './logo.png'; // ضع هنا الصورة المصغّرة التي تريدها في المشروع
       img.onload = () => { thumb.innerHTML = ''; thumb.appendChild(img); };
       img.onerror = () => {
         const fav = faviconFor(link.url);

@@ -1,41 +1,575 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>To‑Do List (LocalStorage)</title>
-  <link rel="stylesheet" href="style.css">
+  <title>AL3MLEAT — مجمّع روابط (نسخة رهيبة)</title>
+
+  <!-- Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1: #0f172a;
+      --bg2: #071129;
+      --card:#0b1220;
+      --glass: rgba(255,255,255,0.03);
+      --accent:#7dd3fc;
+      --accent-2:#0284c7;
+      --muted:#9aa7b4;
+      --radius:14px;
+      --success:#34d399;
+      --shadow-lg: 0 30px 70px rgba(2,6,23,0.6);
+      --shadow-sm: 0 10px 30px rgba(2,6,23,0.45);
+      color-scheme: dark;
+    }
+
+    /* Light theme overrides (applied when .light on html) */
+    html.light {
+      --bg1: #f0f7ff;
+      --bg2: #f6f9ff;
+      --card: linear-gradient(180deg,#ffffff,#fbfdff);
+      --glass: rgba(255,255,255,0.6);
+      --muted:#6b7280;
+      --shadow-lg: 0 20px 50px rgba(11,22,45,0.06);
+      --shadow-sm: 0 8px 28px rgba(11,22,45,0.04);
+    }
+
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    body{
+      display:flex;align-items:center;justify-content:center;padding:36px;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(7,93,151,0.12), transparent 10%),
+                  radial-gradient(1000px 500px at 95% 85%, rgba(6,182,212,0.06), transparent 10%),
+                  linear-gradient(180deg,var(--bg1),var(--bg2));
+      color: #e6eef8;
+    }
+
+    .shell{
+      width:100%;max-width:1100px;border-radius:18px;padding:20px;
+      background:var(--card); box-shadow:var(--shadow-lg); overflow:hidden;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    header.top{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px;
+    }
+
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{
+      width:60px;height:60px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background: linear-gradient(135deg, rgba(125,211,252,0.08), rgba(2,132,199,0.06));
+      border:1px solid rgba(255,255,255,0.03); font-weight:800;font-size:18px;color:var(--accent);
+      box-shadow:var(--shadow-sm);
+    }
+    h1{margin:0;font-size:1.2rem}
+    .tag{color:var(--muted);font-size:0.95rem;margin-top:4px}
+
+    .actions{
+      display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:none;cursor:pointer;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); color:inherit;
+      box-shadow:var(--shadow-sm); transition:transform .12s ease, box-shadow .12s, opacity .12s;
+      font-weight:600;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent-2)); color:#011522}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
+
+    .controls{
+      display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;
+    }
+    .search{
+      padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);min-width:260px;
+      width:420px;background:transparent;color:inherit;font-size:0.98rem;
+      box-shadow: 0 8px 22px rgba(3,6,23,0.3) inset;
+    }
+    .search::placeholder{color:rgba(255,255,255,0.45)}
+
+    /* Grid of cards */
+    .grid{
+      display:grid;grid-template-columns:repeat(3, 1fr);gap:14px;max-height:63vh;padding:8px;overflow:auto;
+    }
+
+    @media (max-width:980px){ .grid{ grid-template-columns:repeat(2,1fr) } .search{ width:260px } }
+    @media (max-width:640px){ .grid{ grid-template-columns:1fr } header.top{flex-direction:column;align-items:stretch} .search{ width:100% } }
+
+    .card{
+      display:flex;gap:14px;align-items:flex-start;padding:14px;border-radius:14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border:1px solid rgba(255,255,255,0.03); transition:transform .16s ease, box-shadow .16s;
+      cursor:grab;
+    }
+    .card:active{cursor:grabbing}
+    .card:hover{ transform:translateY(-8px); box-shadow: 0 28px 60px rgba(2,6,23,0.45) }
+
+    .thumb{
+      width:68px;height:68px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+      background: linear-gradient(180deg, rgba(125,211,252,0.05), rgba(3,105,161,0.03));
+      border:1px solid rgba(255,255,255,0.03); font-weight:700;color:var(--accent);font-size:18px;overflow:hidden;
+    }
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .meta{flex:1;min-width:0}
+    .meta .title{font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta .title a{color:inherit;text-decoration:none; display:inline-block; max-width:100%}
+    .meta .url{color:var(--muted);margin-top:8px;font-size:0.95rem;word-break:break-all}
+    .meta .tags{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+    .tag-pill{background:rgba(125,211,252,0.07);color:var(--accent);padding:6px 8px;border-radius:999px;font-size:0.82rem;border:1px solid rgba(125,211,252,0.04)}
+
+    .card .card-actions{display:flex;flex-direction:column;gap:8px;align-items:center}
+    .card .card-actions .btn{width:86px;padding:8px 10px;font-size:0.95rem}
+
+    .empty{
+      padding:18px;text-align:center;border-radius:12px;color:var(--muted);margin-top:8px;
+      background: linear-gradient(90deg, rgba(125,211,252,0.03), transparent);
+    }
+
+    /* modal */
+    .modal-backdrop{ position:fixed; inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center;z-index:60; }
+    .modal{ width:100%;max-width:680px;background:var(--card);border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,0.04); box-shadow:var(--shadow-lg) }
+    .modal h3{margin:0 0 8px 0}
+    .form-row{display:flex;gap:10px;align-items:center;margin-top:10px}
+    .form-row input, .form-row textarea{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .form-row input::placeholder, textarea::placeholder{color:rgba(255,255,255,0.45)}
+    textarea{min-height:86px;resize:vertical}
+
+    /* toast */
+    .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom:28px;padding:10px 14px;border-radius:999px;background:rgba(3,105,161,0.95);color:white;font-weight:700;box-shadow:0 12px 30px rgba(3,105,161,0.2);opacity:0;pointer-events:none;transition:opacity .18s, transform .18s; z-index:80 }
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); pointer-events:auto }
+
+    /* subtle drag placeholder */
+    .placeholder{ outline:2px dashed rgba(125,211,252,0.2); border-radius:12px; height:86px }
+  </style>
 </head>
 <body>
-  <main class="container">
-    <h1>To‑Do List</h1>
-
-    <form id="todo-form" class="todo-form" autocomplete="off">
-      <input id="todo-input" type="text" placeholder="Add a new task and press Enter" />
-      <button id="add-btn" type="submit">Add</button>
-    </form>
-
-    <div class="controls">
-      <div class="filters">
-        <button data-filter="all" class="filter active">All</button>
-        <button data-filter="active" class="filter">Active</button>
-        <button data-filter="completed" class="filter">Completed</button>
+  <main class="shell" role="main" aria-labelledby="main-title">
+    <header class="top">
+      <div class="brand">
+        <div class="logo">AL</div>
+        <div>
+          <h1 id="main-title">مجمّع روابط AL3MLEAT</h1>
+          <div class="tag">واجهة جديدة وخرافية — إضافة، ترتيب بالسحب، ثيم داكن/فاتح، استيراد/تصدير</div>
+        </div>
       </div>
 
-      <input id="search" type="search" placeholder="Search tasks" />
-    </div>
-
-    <ul id="todo-list" class="todo-list" aria-live="polite"></ul>
-
-    <div class="footer">
-      <span id="count">0 items</span>
       <div class="actions">
-        <button id="clear-completed">Clear completed</button>
-        <button id="clear-all" class="danger">Clear all</button>
+        <button id="new-link" class="btn primary" title="أضف رابط جديد">أضف رابط</button>
+        <button id="open-all" class="btn ghost" title="فتح كل الروابط">فتح الكل</button>
+        <button id="export" class="btn" title="تصدير الملف">تصدير</button>
+        <label class="btn" title="استيراد ملف JSON">
+          استيراد
+          <input id="import" type="file" accept=".json" style="display:none" />
+        </label>
+        <button id="theme-toggle" class="btn" title="تبديل الثيم">تبديل الثيم</button>
       </div>
+    </header>
+
+    <div class="controls" role="region" aria-label="أدوات">
+      <input id="search" class="search" placeholder="ابحث عن عنوان أو رابط (اضغط / للتركيز)" aria-label="بحث">
     </div>
+
+    <section id="list-area">
+      <div id="grid" class="grid" aria-live="polite"></div>
+      <div id="empty" class="empty" style="display:none">لا توجد روابط بعد — اضغط "أضف رابط" لبدء التجميع.</div>
+    </section>
   </main>
 
-  <script src="app.js"></script>
+  <!-- Modal (hidden) -->
+  <div id="modal-root" style="display:none"></div>
+
+  <!-- toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // ---------- Configuration ----------
+    const STORAGE_KEY = 'al3mleat-links-v3';
+    const THEME_KEY = 'al3mleat-theme-v1';
+
+    // ---------- Initial seed ----------
+    const initial = [
+      { id: 'al3mleat-1', url: 'https://bdarkr.github.io/AL3MLEAT/', title: 'AL3MLEAT' },
+      { id: 'al3mleat-2', url: 'https://bdarkr.github.io/AL3MLEAT1/', title: 'AL3MLEAT1' },
+      { id: 'al3mleat-3', url: 'https://bdarkr.github.io/AL3MLEAT2/', title: 'AL3MLEAT2' },
+      { id: 'al3mleat-4', url: 'https://bdarkr.github.io/AL3MLEAT4/', title: 'AL3MLEAT4' }
+    ];
+
+    // ---------- State ----------
+    let links = [];
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    const searchEl = document.getElementById('search');
+    const newBtn = document.getElementById('new-link');
+    const exportBtn = document.getElementById('export');
+    const importInput = document.getElementById('import');
+    const openAllBtn = document.getElementById('open-all');
+    const themeToggle = document.getElementById('theme-toggle');
+    const modalRoot = document.getElementById('modal-root');
+    const toastEl = document.getElementById('toast');
+
+    // ---------- Utilities ----------
+    const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+    const showToast = (text, ms=1600) => {
+      toastEl.textContent = text;
+      toastEl.classList.add('show');
+      clearTimeout(toastEl._t);
+      toastEl._t = setTimeout(()=> toastEl.classList.remove('show'), ms);
+    };
+
+    const save = () => {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(links)); } catch(e){}
+    };
+    const load = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        links = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(initial));
+      } catch(e){
+        links = JSON.parse(JSON.stringify(initial));
+      }
+    };
+
+    // Theme
+    const applyTheme = (t) => {
+      if (t === 'light') document.documentElement.classList.add('light');
+      else document.documentElement.classList.remove('light');
+      try { localStorage.setItem(THEME_KEY, t); } catch(e){}
+      themeToggle.textContent = (t === 'light' ? 'وضع داكن' : 'وضع فاتح');
+    };
+    const savedTheme = (() => { try { return localStorage.getItem(THEME_KEY) } catch(e){return null} })();
+    applyTheme(savedTheme || 'dark');
+
+    themeToggle.addEventListener('click', () => {
+      const cur = document.documentElement.classList.contains('light') ? 'light' : 'dark';
+      applyTheme(cur === 'light' ? 'dark' : 'light');
+    });
+
+    // Favicons helper
+    function faviconFor(url){
+      try {
+        const u = new URL(url);
+        return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=128`;
+      } catch(e){ return ''; }
+    }
+
+    // ---------- Rendering ----------
+    function render(filter=''){
+      grid.innerHTML = '';
+      const q = (filter || '').trim().toLowerCase();
+      const list = links.filter(l => {
+        if (!q) return true;
+        return (l.title||'').toLowerCase().includes(q) || (l.url||'').toLowerCase().includes(q) || (l.tags||[]).join(' ').includes(q);
+      });
+
+      if (!list.length){
+        empty.style.display = 'block';
+      } else {
+        empty.style.display = 'none';
+        for (const item of list) grid.appendChild(makeCard(item));
+      }
+    }
+
+    function makeCard(link){
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.draggable = true;
+      el.dataset.id = link.id;
+
+      // drag handlers
+      el.addEventListener('dragstart', dragStart);
+      el.addEventListener('dragend', dragEnd);
+      el.addEventListener('dragover', dragOver);
+      el.addEventListener('drop', dropHandler);
+
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      const img = document.createElement('img');
+      img.src = faviconFor(link.url);
+      img.alt = '';
+      img.onload = () => { thumb.innerHTML = ''; thumb.appendChild(img); };
+      img.onerror = () => { thumb.textContent = (link.title || link.url).slice(0,2).toUpperCase(); };
+      // initial initials
+      thumb.textContent = (link.title || link.url).slice(0,2).toUpperCase();
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const title = document.createElement('div');
+      title.className = 'title';
+      const a = document.createElement('a');
+      a.href = link.url;
+      a.textContent = link.title || link.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.addEventListener('click', (e) => {
+        // allow normal open; could increase visit count later
+      });
+      title.appendChild(a);
+
+      const urlLine = document.createElement('div');
+      urlLine.className = 'url';
+      urlLine.textContent = link.url;
+
+      const tagsWrap = document.createElement('div');
+      tagsWrap.className = 'tags';
+      (link.tags||[]).forEach(t => {
+        const p = document.createElement('span');
+        p.className = 'tag-pill';
+        p.textContent = t;
+        p.addEventListener('click', () => { searchEl.value = t; render(t); });
+        tagsWrap.appendChild(p);
+      });
+
+      meta.appendChild(title);
+      meta.appendChild(urlLine);
+      if ((link.tags||[]).length) meta.appendChild(tagsWrap);
+
+      const actions = document.createElement('div');
+      actions.className = 'card-actions';
+
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn';
+      openBtn.textContent = 'فتح';
+      openBtn.addEventListener('click', () => window.open(link.url, '_blank', 'noopener'));
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn ghost';
+      editBtn.textContent = 'تعديل';
+      editBtn.addEventListener('click', () => openModal('edit', link.id));
+
+      actions.appendChild(openBtn);
+      actions.appendChild(editBtn);
+
+      el.appendChild(thumb);
+      el.appendChild(meta);
+      el.appendChild(actions);
+      return el;
+    }
+
+    // ---------- Drag & Drop reordering ----------
+    let dragSrcEl = null;
+    function dragStart(e){
+      dragSrcEl = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', this.dataset.id); } catch(e){}
+      // placeholder visual
+      this.style.opacity = '0.5';
+    }
+    function dragEnd(){
+      this.classList.remove('dragging');
+      this.style.opacity = '';
+      // remove any placeholder nodes
+      document.querySelectorAll('.placeholder').forEach(p => p.remove());
+    }
+    function dragOver(e){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const target = this;
+      if (target === dragSrcEl) return;
+      // compute position: insert placeholder before/after based on mouse
+      const rect = target.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      const gridEl = grid;
+      let placeholder = gridEl.querySelector('.placeholder');
+      if (!placeholder){
+        placeholder = document.createElement('div');
+        placeholder.className = 'placeholder';
+      }
+      if (e.clientY < mid){
+        gridEl.insertBefore(placeholder, target);
+      } else {
+        gridEl.insertBefore(placeholder, target.nextSibling);
+      }
+    }
+    function dropHandler(e){
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain') || (dragSrcEl && dragSrcEl.dataset.id);
+      if (!id) return;
+      const placeholder = grid.querySelector('.placeholder');
+      let insertBeforeId = null;
+      if (placeholder && placeholder.nextSibling){
+        insertBeforeId = placeholder.nextSibling.dataset ? placeholder.nextSibling.dataset.id : null;
+      }
+      // remove dragged from array and re-insert
+      const idx = links.findIndex(x=>x.id===id);
+      if (idx === -1) return;
+      const [item] = links.splice(idx,1);
+      if (!insertBeforeId){
+        links.push(item);
+      } else {
+        const beforeIdx = links.findIndex(x=>x.id===insertBeforeId);
+        if (beforeIdx === -1) links.push(item);
+        else links.splice(beforeIdx, 0, item);
+      }
+      save();
+      render(searchEl.value);
+    }
+
+    // ---------- Modal (add/edit) ----------
+    function openModal(mode='add', id=null){
+      modalRoot.innerHTML = '';
+      modalRoot.style.display = 'flex';
+      const backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop';
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML = `
+        <h3>${mode === 'add' ? 'أضف رابطاً جديداً' : 'تعديل الرابط'}</h3>
+        <div class="form-row"><input id="m-url" placeholder="رابط (https://...)" /></div>
+        <div class="form-row"><input id="m-title" placeholder="عنوان اختياري" /></div>
+        <div class="form-row"><input id="m-tags" placeholder="وسوم مفصولة بفواصل (اختياري)" /></div>
+        <div class="form-row"><textarea id="m-notes" placeholder="ملاحظات (اختياري)"></textarea></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+          <button id="m-cancel" class="btn ghost">إلغاء</button>
+          <button id="m-save" class="btn primary">${mode === 'add' ? 'أضف' : 'حفظ'}</button>
+        </div>
+      `;
+      backdrop.appendChild(modal);
+      modalRoot.appendChild(backdrop);
+
+      const urlI = modal.querySelector('#m-url');
+      const titleI = modal.querySelector('#m-title');
+      const tagsI = modal.querySelector('#m-tags');
+      const notesI = modal.querySelector('#m-notes');
+      const cancelBtn = modal.querySelector('#m-cancel');
+      const saveBtn = modal.querySelector('#m-save');
+
+      if (mode === 'edit' && id){
+        const item = links.find(x=>x.id === id);
+        if (item){
+          urlI.value = item.url;
+          titleI.value = item.title || '';
+          tagsI.value = (item.tags||[]).join(',');
+          notesI.value = item.notes || '';
+        }
+      }
+
+      const close = () => { modalRoot.style.display = 'none'; modalRoot.innerHTML = ''; };
+      cancelBtn.addEventListener('click', close);
+      backdrop.addEventListener('click', (e)=> { if (e.target === backdrop) close(); });
+
+      saveBtn.addEventListener('click', () => {
+        const url = (urlI.value || '').trim();
+        if (!url) { showToast('أدخل رابطاً صالحاً'); return; }
+        try { new URL(url); } catch(e){ showToast('الرابط غير صالح'); return; }
+        const title = (titleI.value || '').trim();
+        const tags = (tagsI.value || '').split(',').map(s=>s.trim()).filter(Boolean).map(s=>s.toLowerCase());
+        const notes = (notesI.value || '').trim();
+        if (mode === 'add'){
+          links.unshift({ id: uid(), url, title, tags, notes, createdAt: new Date().toISOString() });
+          showToast('أضيف الرابط');
+        } else if (mode === 'edit' && id){
+          const item = links.find(x=>x.id===id);
+          if (item){ item.url = url; item.title = title; item.tags = tags; item.notes = notes; showToast('تم حفظ التعديلات'); }
+        }
+        save();
+        render(searchEl.value);
+        close();
+      });
+
+      // focus first field
+      setTimeout(()=> urlI.focus(), 60);
+    }
+
+    // ---------- Export / Import ----------
+    function exportJSON(){
+      const payload = links.map(l => ({
+        id: l.id,
+        url: l.url,
+        title: l.title || '',
+        tags: l.tags || [],
+        notes: l.notes || '',
+        createdAt: l.createdAt || new Date().toISOString()
+      }));
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = u;
+      a.download = 'al3mleat-links.json';
+      a.click();
+      URL.revokeObjectURL(u);
+      showToast('تم تصدير الملف');
+    }
+
+    importInput.addEventListener('change', async (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      try {
+        const txt = await f.text();
+        const imported = JSON.parse(txt);
+        if (!Array.isArray(imported)) throw new Error('invalid');
+        const sanitized = imported.map(it => ({
+          id: uid(),
+          url: it.url,
+          title: it.title || '',
+          tags: Array.isArray(it.tags) ? it.tags.map(t=>t.toLowerCase()) : (it.tags||'').toString().split(',').map(s=>s.trim()).filter(Boolean),
+          notes: it.notes || '',
+          createdAt: it.createdAt || new Date().toISOString()
+        }));
+        links = sanitized.concat(links);
+        save(); render();
+        showToast('تم الاستيراد');
+      } catch(err){
+        console.error(err); showToast('فشل الاستيراد — ملف غير صالح');
+      }
+      importInput.value = '';
+    });
+
+    // ---------- Keyboard shortcuts ----------
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchEl) { e.preventDefault(); searchEl.focus(); }
+      if ((e.key === 'n' || e.key === 'N') && !e.metaKey && !e.ctrlKey) { e.preventDefault(); openModal('add'); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); searchEl.focus(); }
+    });
+
+    // ---------- Open all ----------
+    openAllBtn.addEventListener('click', () => {
+      if (!links.length) return;
+      if (!confirm('فتح كل الروابط في تبويبات جديدة؟')) return;
+      for (const l of links) window.open(l.url, '_blank', 'noopener');
+      showToast('تم فتح الروابط');
+    });
+
+    exportBtn.addEventListener('click', exportJSON);
+    newBtn.addEventListener('click', ()=> openModal('add'));
+
+    // Search
+    searchEl.addEventListener('input', (e)=> render(e.target.value));
+
+    // ---------- Edit via double-click on card ----------
+    grid.addEventListener('dblclick', (e) => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+      const id = card.dataset.id;
+      openModal('edit', id);
+    });
+
+    // ---------- Load & init ----------
+    load();
+    render();
+
+    // ---------- Public API for interoperability ----------
+    window.__AL3MLEAT = {
+      getLinks: () => JSON.parse(JSON.stringify(links)),
+      setLinks: (arr) => { if (Array.isArray(arr)){ links = JSON.parse(JSON.stringify(arr)); save(); render(); } }
+    };
+
+    // ---------- helper for drag placeholder removal if mouse leaves grid ----------
+    grid.addEventListener('dragleave', (e) => {
+      if (e.target === grid) {
+        document.querySelectorAll('.placeholder').forEach(p => p.remove());
+      }
+    });
+
+    // ---------- small accessibility: announce count on load ----------
+    setTimeout(()=> {
+      const cnt = links.length;
+      showToast(`${cnt} رابط${cnt!==1?'s':''} جاهز` , 1200);
+    }, 500);
+
+    // Expose simple method to reset to seed (for development)
+    window.__resetToSeed = () => { links = JSON.parse(JSON.stringify(initial)); save(); render(); showToast('تم إعادة التهيئة'); };
+  </script>
 </body>
 </html>

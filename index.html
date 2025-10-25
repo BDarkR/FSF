@@ -100,6 +100,7 @@
       border:1px solid rgba(255,255,255,0.03); transition:transform .16s ease, box-shadow .16s;
       cursor:default;
       width:320px; /* عرض ثابت لكل بطاقة ليبقى التنسيق ثابت ومتمركز */
+      box-sizing:border-box;
     }
     .card:hover{ transform:translateY(-6px); box-shadow: 0 28px 60px rgba(2,6,23,0.45) }
 
@@ -117,12 +118,45 @@
     .meta .tags{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
     .tag-pill{background:rgba(125,211,252,0.07);color:var(--accent);padding:6px 8px;border-radius:999px;font-size:0.82rem;border:1px solid rgba(125,211,252,0.04)}
 
-    .card .card-actions{ display:none; }
+    /* أظهر أزرار الإجراءات واجعلها مصممة بشكل بسيط */
+    .card .card-actions{ display:flex;gap:8px;align-items:center;flex-direction:column;flex-shrink:0 }
+    .open-btn{
+      background: linear-gradient(90deg,var(--accent), var(--accent-2));
+      color:#012233;
+      border:none;
+      padding:8px 10px;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow: var(--shadow-sm);
+      font-size:0.9rem;
+    }
+    .open-btn:active{ transform: translateY(1px) }
+    .open-btn[aria-disabled="true"]{ opacity:0.5; cursor:not-allowed }
 
     .empty{padding:18px;text-align:center;border-radius:12px;color:var(--muted);margin-top:8px;background: linear-gradient(90deg, rgba(125,211,252,0.03), transparent);}
 
-    .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom:28px;padding:10px 14px;border-radius:999px;background:rgba(3,105,161,0.95);color:white;font-weight:700;box-shadow:0 12px 30px rgba(2,6,23,0.5); opacity:0; pointer-events:none; transition:all .22s ease }
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:28px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(3,105,161,0.95);
+      color:white;
+      font-weight:700;
+      box-shadow:0 12px 30px rgba(2,6,23,0.4);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .22s ease, transform .22s ease;
+      z-index:1200;
+    }
     .toast.show{ opacity:1; transform: translateX(-50%) translateY(-6px); pointer-events:auto }
+
+    /* إمكانية الوصول: اجعل البطاقات قابلة للتركيز */
+    .card[tabindex="0"]{ outline: none; }
+    .card:focus{ box-shadow: 0 30px 80px rgba(2,6,23,0.5); transform: translateY(-6px); }
   </style>
 </head>
 <body>
@@ -165,7 +199,12 @@
     const toastEl = document.getElementById('toast');
 
     const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-    const showToast = (t, ms=1200) => { toastEl.textContent = t; toastEl.classList.add('show'); clearTimeout(toastEl._t); toastEl._t = setTimeout(()=> toastEl.classList.remove('show'), ms); };
+    const showToast = (t, ms=1200) => {
+      toastEl.textContent = t;
+      toastEl.classList.add('show');
+      clearTimeout(toastEl._t);
+      toastEl._t = setTimeout(()=> toastEl.classList.remove('show'), ms);
+    };
 
     function save(){
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(links)); } catch(e) {}
@@ -196,6 +235,9 @@
       const el = document.createElement('div');
       el.className = 'card';
       el.dataset.id = link.id;
+      el.setAttribute('role','button');
+      el.setAttribute('tabindex','0');
+      el.setAttribute('aria-label', `فتح ${link.title || link.url}`);
 
       const thumb = document.createElement('div');
       thumb.className = 'thumb';
@@ -226,10 +268,49 @@
       const actions = document.createElement('div');
       actions.className = 'card-actions';
 
+      // زر الفتح
+      const openBtn = document.createElement('button');
+      openBtn.className = 'open-btn';
+      openBtn.type = 'button';
+      openBtn.textContent = 'فتح';
+      openBtn.setAttribute('aria-label', `فتح ${link.title || link.url} في نافذة جديدة`);
+      openBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        openLink(link.url);
+      });
+
+      actions.appendChild(openBtn);
+
+      // النقر على البطاقة يفتح الرابط أيضاً (ما لم يتم النقر على زر آخر)
+      el.addEventListener('click', (ev) => {
+        // إذا تم النقر على زر أو عنصر تفاعلي داخل البطاقة، تجاهل (زر already handled)
+        const target = ev.target;
+        if (target.tagName.toLowerCase() === 'button' || target.closest('button')) return;
+        openLink(link.url);
+      });
+
+      // دعم لوحة المفاتيح: Enter أو Space يفتح الرابط
+      el.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          openLink(link.url);
+        }
+      });
+
       el.appendChild(thumb);
       el.appendChild(meta);
       el.appendChild(actions);
       return el;
+    }
+
+    function openLink(url){
+      try {
+        // افتح الرابط في تبويب جديد مع حماية noopener
+        window.open(url, '_blank', 'noopener,noreferrer');
+        showToast('تم فتح الرابط');
+      } catch(e){
+        showToast('تعذّر فتح الرابط', 1600);
+      }
     }
 
     load();

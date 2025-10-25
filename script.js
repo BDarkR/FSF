@@ -28,6 +28,7 @@ function renderList(items) {
   items.forEach(it => {
     const li = document.createElement('li');
     li.className = 'link-card';
+    li.setAttribute('role', 'listitem');
     li.innerHTML = `
       <div class="card-top">
         <div>
@@ -43,9 +44,9 @@ function renderList(items) {
         <div class="small">#${it.id}</div>
       </div>
       <div class="card-actions">
-        <button class="action-btn preview primary" data-id="${it.id}">معاينة</button>
-        <button class="action-btn open" data-url="${it.url}">فتح</button>
-        <button class="action-btn copy" data-url="${it.url}">نسخ</button>
+        <button class="action-btn preview primary" data-id="${it.id}" type="button">معاينة</button>
+        <button class="action-btn open" data-url="${it.url}" type="button">فتح</button>
+        <button class="action-btn copy" data-url="${it.url}" type="button">نسخ</button>
       </div>
     `;
     listEl.appendChild(li);

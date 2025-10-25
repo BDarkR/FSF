@@ -9,8 +9,9 @@
 
   <style>
     :root{
-      --accent:#7dd3fc;
-      --accent-2:#0284c7;
+      /* غيّرت الألوان للأخضر ليتطابق مع شعارك */
+      --accent:#22c55e;       /* أخضر فاتح (للنص/أيقونات) */
+      --accent-2:#166534;     /* أخضر غامق (للتدرجات) */
       --muted:#9aa7b4;
       --radius:14px;
       --shadow-lg: 0 30px 70px rgba(2,6,23,0.6);
@@ -68,19 +69,29 @@
       flex: 0 0 auto; /* لا يسمح للهايدر بالتمدد */
     }
 
-    .brand{display:flex;gap:12px;align-items:center}
+    /* الآن الشعار والعنوان مُوسّطان معاً */
+    .brand{
+      display:flex;
+      flex-direction:column; /* الشعار فوق العنوان */
+      gap:8px;
+      align-items:center;     /* محاذاة بالمنتصف أفقياً */
+      text-align:center;      /* نص في الوسط */
+      flex:1;
+    }
+
     .logo{
       width:60px;height:60px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-      background: linear-gradient(135deg, rgba(125,211,252,0.08), rgba(2,132,199,0.06));
-      border:1px solid rgba(255,255,255,0.03); font-weight:800;font-size:18px;color:var(--accent);
+      background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(22,101,52,0.06));
+      border:1px solid rgba(255,255,255,0.03);
+      font-weight:800;font-size:18px;color:var(--accent);
       box-shadow:var(--shadow-sm);
-      overflow:hidden; /* مهم: يمنع تجاوز الصورة لحواف المربع */
+      overflow:hidden; /* يمنع تجاوز الصورة لحواف المربع */
     }
     /* قصر الصورة داخل المربع بشكل آمن ومناسب */
     .logo img{
       width:100%;
       height:100%;
-      object-fit:cover; /* أو object-fit:contain إذا حبيتي تظهر كامل الشعار مع خلفية */
+      object-fit:contain; /* يظهر الشعار كاملاً داخل المربع بدلاً من القص */
       display:block;
       pointer-events:none;
       user-select:none;
@@ -116,9 +127,10 @@
     }
     .card:hover{ transform:translateY(-6px); box-shadow: 0 28px 60px rgba(2,6,23,0.45) }
 
+    /* غيّرت لون خلفية الـ thumb للأخضر بحيث يطابق الشعار */
     .thumb{
       width:68px;height:68px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-      background: linear-gradient(180deg, rgba(125,211,252,0.05), rgba(3,105,161,0.03));
+      background: linear-gradient(180deg, rgba(34,197,94,0.06), rgba(16,99,47,0.03));
       border:1px solid rgba(255,255,255,0.03); font-weight:700;color:var(--accent);font-size:18px;overflow:hidden;
     }
     .thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
@@ -128,9 +140,10 @@
     .meta .title .title-text{color:inherit;text-decoration:none; display:inline-block; max-width:100%}
     .meta .url{display:none}
     .meta .tags{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-    .tag-pill{background:rgba(125,211,252,0.07);color:var(--accent);padding:6px 8px;border-radius:999px;font-size:0.82rem;border:1px solid rgba(125,211,252,0.04)}
+    /* تلوين الـ tag-pill بالأخضر */
+    .tag-pill{background:rgba(34,197,94,0.07);color:var(--accent);padding:6px 8px;border-radius:999px;font-size:0.82rem;border:1px solid rgba(34,197,94,0.04)}
 
-    /* أظهر أزرار الإجراءات واجعلها مصممة بشكل بسيط */
+    /* أظهر أزرار الإجراءات واجعلها مصممة بشكل بسيط (تدرّج أخضر) */
     .card .card-actions{ display:flex;gap:8px;align-items:center;flex-direction:column;flex-shrink:0 }
     .open-btn{
       background: linear-gradient(90deg,var(--accent), var(--accent-2));
@@ -146,7 +159,7 @@
     .open-btn:active{ transform: translateY(1px) }
     .open-btn[aria-disabled="true"]{ opacity:0.5; cursor:not-allowed }
 
-    .empty{padding:18px;text-align:center;border-radius:12px;color:var(--muted);margin-top:8px;background: linear-gradient(90deg, rgba(125,211,252,0.03), transparent);}
+    .empty{padding:18px;text-align:center;border-radius:12px;color:var(--muted);margin-top:8px;background: linear-gradient(90deg, rgba(34,197,94,0.03), transparent);}
 
     .toast{
       position:fixed;
@@ -176,8 +189,8 @@
     <header class="top">
       <div class="brand">
         <div class="logo">
-  <img src="./logo.png" alt="شعار">
-</div>
+          <img src="./logo.png" alt="شعار">
+        </div>
         <div>
           <h1 id="main-title"> تقارير العمليات</h1>
           <div class="tag">اختار الرابط المناسب لك</div>
@@ -202,7 +215,7 @@
 
     const initial = [
       { id: 'al3mleat-1', url: 'https://bdarkr.github.io/AL3MLEAT/', title: 'تقرير العـمـليات الشفت المسائي' },
-      { id: 'al3mleat-2', url: 'https://bdarkr.github.io/AL3MLEAT1/', title: 'تقرير العـمالات الميناء' },
+      { id: 'al3mleat-2', url: 'https://bdarkr.github.io/AL3MLEAT1/', title: 'تقرير العـمـلات الميناء' },
       { id: 'al3mleat-3', url: 'https://bdarkr.github.io/AL3MLEAT2/', title: 'تقرير العمليات التوسعات' },
       { id: 'al3mleat-4', url: 'https://bdarkr.github.io/AL3MLEAT4/', title: 'تقرير العملـيات الطوارئ' }
     ];
